@@ -5,6 +5,7 @@ import collections, {
   selectEntryPath,
   selectEntrySlug,
   getFieldsNames,
+  selectField,
 } from '../collections';
 import { FILES, FOLDER } from 'Constants/collectionTypes';
 
@@ -109,6 +110,42 @@ describe('collections', () => {
         'it.title',
         'it.title.subTitle',
       ]);
+    });
+  });
+
+  describe('selectField', () => {
+    it('should return top field by key', () => {
+      const collection = fromJS({
+        fields: [{ name: 'en' }, { name: 'es' }],
+      });
+      expect(selectField(collection, 'en')).toBe(collection.get('fields').get(0));
+    });
+
+    it('should return nested field by key', () => {
+      const collection = fromJS({
+        fields: [
+          { name: 'en', fields: [{ name: 'title' }, { name: 'body' }] },
+          { name: 'es', fields: [{ name: 'title' }, { name: 'body' }] },
+          { name: 'it', field: { name: 'title', fields: [{ name: 'subTitle' }] } },
+        ],
+      });
+
+      expect(selectField(collection, 'en.title')).toBe(
+        collection
+          .get('fields')
+          .get(0)
+          .get('fields')
+          .get(0),
+      );
+
+      expect(selectField(collection, 'it.title.subTitle')).toBe(
+        collection
+          .get('fields')
+          .get(2)
+          .get('field')
+          .get('fields')
+          .get(0),
+      );
     });
   });
 });
